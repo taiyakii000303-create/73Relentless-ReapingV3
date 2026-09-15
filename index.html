@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>FF14 7.3 極神【機制依序記錄】超大字修正版</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #ffd700; font-size: 1.4rem; margin-bottom: 5px; }
+        p.tip { color: #aaa; font-size: 0.85rem; margin-top: 0; margin-bottom: 20px; }
+        .container { max-width: 550px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .grid { display: flex; gap: 15px; margin-bottom: 20px; }
+        .col-left { flex: 4; display: flex; flex-direction: column; gap: 8px; }
+        .col-right { flex: 5; display: flex; flex-direction: column; gap: 8px; }
+        h3 { font-size: 0.95rem; margin: 5px 0; color: #ddd; text-align: left; border-left: 3px solid #ffd700; padding-left: 8px; }
+        
+        /* 基礎按鈕樣式 */
+        button { padding: 12px 10px; font-size: 1rem; font-weight: bold; background: #2d2d2d; color: #fff; border: 1px solid #444; border-radius: 6px; cursor: pointer; transition: 0.1s; position: relative; }
+        button:active { background: #ffd700; color: #000; }
+        button.active-num { background: #ffd700; color: #000; border-color: #fff; }
+        
+        /* 🎯 右側專屬：超大首發數字按鈕 */
+        .num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .big-num-btn { 
+            aspect-ratio: 1; 
+            font-size: 2.2rem; 
+            font-weight: 900; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            background: #2a2a2a;
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 0;
+        }
+        .big-num-btn span.sub-text { font-size: 0.65rem; color: #aaa; margin-top: 4px; font-weight: normal; }
+        
+        /* 左側機制被點選後的數字小標籤 */
+        .click-badge { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #ffd700; color: #000; border-radius: 50%; width: 20px; height: 20px; line-height: 20px; font-size: 0.8rem; font-weight: bold; }
+        
+        hr { border: 0; border-top: 1px solid #333; margin: 15px 0; }
+        .result-title { font-size: 1.1rem; color: #ffd700; margin-bottom: 10px; }
+        .row { display: flex; align-items: center; background: #252525; margin: 6px 0; padding: 10px; border-radius: 6px; font-size: 1rem; border: 1px solid #3d3d3d; }
+        .step { width: 55px; color: #888; font-size: 0.85rem; text-align: left; }
+        .num { font-weight: 900; color: #ffd700; font-size: 1.5rem; width: 40px; text-align: center; margin-right: 15px; background: #111; border-radius: 50%; height: 35px; line-height: 35px; }
+        .mech-name { font-weight: bold; flex-grow: 1; text-align: left; }
+        .safe { font-size: 0.85rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        
+        /* 安全區顏色 */
+        .safe-out { background: rgba(255, 89, 94, 0.15); color: #ff595e; border: 1px solid #ff595e; }
+        .safe-in { background: rgba(82, 183, 136, 0.15); color: #52b788; border: 1px solid #52b788; }
+        .safe-side { background: rgba(30, 144, 255, 0.15); color: #1e90ff; border: 1px solid #1e90ff; }
+        
+        .clear-btn { background: #bd1f36; border: 1px solid #ff595e; width: 100%; padding: 10px; font-size: 0.9rem; font-weight: bold; }
+        .clear-btn:active { background: #ff595e; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <h1>FF14 7.3 極神機制大師 v3 (超大字版)</h1>
+    <p class="tip">青之連魂 — 隨機機制【依序點擊】全自動小抄</p>
+    
+    <div class="container">
+        <div class="grid">
+            <!-- 左側：機制依序點擊 -->
+            <div class="col-left">
+                <h3>1. 依序點擊機制</h3>
+                <button id="btn-steel" onclick="recordMech('steel')">⚔️ 鋼鐵 (內)</button>
+                <button id="btn-line" onclick="recordMech('line')">直線 (內)</button>
+                <button id="btn-ring" onclick="recordMech('ring')">🌙 月環 (外)</button>
+                <button id="btn-outer" onclick="recordMech('outer')">💥 外側 (外)</button>
+            </div>
+            
+            <!-- 右側：轉盤數字 (超大正方形按鈕) -->
+            <div class="col-right">
+                <h3>2. 首發 轉盤數字</h3>
+                <div class="num-grid">
+                    <button class="big-num-btn" id="n-2" onclick="setNum(2)">2<span class="sub-text">2➔3➔4➔1</span></button>
+                    <button class="big-num-btn" id="n-3" onclick="setNum(3)">3<span class="sub-text">3➔4➔1➔2</span></button>
+                    <button class="big-num-btn" id="n-4" onclick="setNum(4)">4<span class="sub-text">4➔1➔2➔3</span></button>
+                </div>
+                
+                <button class="clear-btn" onclick="resetMechOnly()">🔄 重設左側機制</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="result-title">▼ 依點擊順序配對結果 ▼</div>
+        <div id="result">
+            <p style="color:#aaa; font-style: italic; padding: 20px 0;">請先選右側【首發數字】<br>並在左側【依序點擊 3 個機制】...</p>
+        </div>
+    </div>
+
+    <script>
+        var selectedNum = null;
+        var clickedMechs = []; 
+
+        var mechDetails = {
+            steel: { name: "⚔️ 鋼鐵 (內)", safe: "遠離 BOSS (外安)", css: "safe-out" },
+            line:  { name: "直線 (內)", safe: "BOSS 兩側安全", css: "safe-side" },
+            ring:  { name: "🌙 月環 (外)", safe: "靠近 BOSS (內安)", css: "safe-in" },
+            outer: { name: "💥 外側 (外)", safe: "場地中央 (內安)", css: "safe-in" }
+        };
+
+        // 右側：設定首發數字（完全保留原本安全的 ID 直接控制寫法，不使用容易壞掉的陣列遍歷）
+        function setNum(num) {
+            selectedNum = num;
+            
+            // 點擊時清空其他人的選取狀態，讓畫面保持只有一個黃色大數字
+            document.getElementById('n-2').classList.remove('active-num');
+            document.getElementById('n-3').classList.remove('active-num');
+            document.getElementById('n-4').classList.remove('active-num');
+            
+            document.getElementById('n-' + num).classList.add('active-num');
+            calculate();
+        }
+
+        // 左側：依序記錄點擊的機制
+        function recordMech(type) {
+            if (clickedMechs.includes(type)) return;
+            if (clickedMechs.length >= 3) return;
+
+            clickedMechs.push(type);
+            
+            var btn = document.getElementById('btn-' + type);
+            var badge = document.createElement('span');
+            badge.className = 'click-badge';
+            badge.innerText = clickedMechs.length;
+            btn.appendChild(badge);
+            btn.style.borderColor = '#ffd700';
+
+            if (clickedMechs.length === 3) {
+                var honestyMechs = ['steel', 'line', 'ring', 'outer'];
+                var remaining = honestyMechs.filter(function(m) {
+                    return !clickedMechs.includes(m);
+                })[0]; // 確保抓出字串
+                
+                clickedMechs.push(remaining); 
+                
+                var lastBtn = document.getElementById('btn-' + remaining);
+                var lastBadge = document.createElement('span');
+                lastBadge.className = 'click-badge';
+                lastBadge.innerText = "4";
+                lastBtn.appendChild(lastBadge);
+                lastBtn.style.borderColor = '#888';
+            }
+
+            calculate();
+        }
+
+        // 計算並渲染結果
+        function calculate() {
+            var resultDiv = document.getElementById('result');
+
+            if (selectedNum === null) {
+                resultDiv.innerHTML = "<p style='color:#ffd700; font-weight:bold;'>【提示】請先點選右邊的「超大首發轉盤數字」！</p>";
+                return;
+            }
+            if (clickedMechs.length < 4) {
+                resultDiv.innerHTML = "<p style='color:#ffd700;'>【已記錄 " + clickedMechs.length + " 個機制】請繼續點選下一個看到的機制...</p>";
+                return;
+            }
+
+            var numOrder = [];
+            var start = selectedNum;
+            for (var i = 0; i < 4; i++) {
+                var current = start + i;
+                if (current > 4) current -= 4;
+                numOrder.push(current);
+            }
+
+            var html = "";
+            for (var j = 0; j < 4; j++) {
+                var currentMechKey = clickedMechs[j];
+                var data = mechDetails[currentMechKey];
+                
+                html += "<div class='row'>";
+                html += "  <div class='step'>第 " + (j + 1) + " 步</div>";
+                html += "  <div class='num'>" + numOrder[j] + "</div>";
+                html += "  <div class='mech-name'>" + data.name + "</div>";
+                html += "  <div class='safe " + data.css + "'>" + data.safe + "</div>";
+                html += "</div>";
+            }
+
+            resultDiv.innerHTML = html;
+        }
+
+        // 重設左側機制順序
+        function resetMechOnly() {
+            clickedMechs = [];
+            var keys = ['steel', 'line', 'ring', 'outer'];
+            for (var i = 0; i < keys.length; i++) {
+                var btn = document.getElementById('btn-' + keys[i]);
+                btn.style.borderColor = '#444';
+                var badge = btn.querySelector('.click-badge');
+                if (badge) btn.removeChild(badge);
+            }
+            calculate();
+        }
+    </script>
+
+</body>
+</html>
